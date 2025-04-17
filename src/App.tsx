@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import DiffViewer from "./components/DiffViewer";
 import FileInput from "./components/FileInput";
-import DiffStatistics from "./components/DiffStatistics";
 import DiffSettings from "./components/DiffSettings";
 import { DiffProvider } from "./context/DiffContext";
 import Navbar from "./components/Navbar";
@@ -53,8 +52,6 @@ const App: React.FC = () => {
                     <DiffViewer />
                   </div>
                 </div>
-
-                <DiffStatistics />
               </div>
             </>
           )}
