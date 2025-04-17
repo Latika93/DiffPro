@@ -1,8 +1,10 @@
+/* Import fonts first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+/* Then Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
 @layer base {
   :root {
@@ -43,6 +45,27 @@
 
   pre, code {
     font-family: 'Fira Code', monospace;
+  }
+  
+  /* Syntax highlighting for code blocks */
+  .syntax-highlight .keyword {
+    @apply text-purple-500;
+  }
+  
+  .syntax-highlight .string {
+    @apply text-green-500;
+  }
+  
+  .syntax-highlight .comment {
+    @apply text-gray-400 italic;
+  }
+  
+  .syntax-highlight .number {
+    @apply text-yellow-500;
+  }
+  
+  .syntax-highlight .function {
+    @apply text-blue-500;
   }
 }
 

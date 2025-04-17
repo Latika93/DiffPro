@@ -7,11 +7,51 @@ type FileInputProps = {
   description: string;
 };
 
+// Function to detect the file type from the filename
+const getFileType = (filename: string): string => {
+  const extension = filename.split(".").pop()?.toLowerCase() || "";
+
+  // Map of common file extensions to their types
+  const extensionMap: Record<string, string> = {
+    // Web
+    html: "HTML",
+    css: "CSS",
+    js: "JavaScript",
+    jsx: "React JSX",
+    ts: "TypeScript",
+    tsx: "React TSX",
+    json: "JSON",
+    // Programming languages
+    py: "Python",
+    java: "Java",
+    c: "C",
+    cpp: "C++",
+    cs: "C#",
+    go: "Go",
+    rb: "Ruby",
+    php: "PHP",
+    rs: "Rust",
+    // Markup
+    md: "Markdown",
+    xml: "XML",
+    yml: "YAML",
+    yaml: "YAML",
+    // Other
+    txt: "Text",
+    csv: "CSV",
+    sh: "Shell Script",
+    sql: "SQL",
+  };
+
+  return extensionMap[extension] || "Plain Text";
+};
+
 const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { leftContent, rightContent, setLeftContent, setRightContent } =
     useDiff();
   const [fileName, setFileName] = useState<string>("");
+  const [fileType, setFileType] = useState<string>("Plain Text");
   const [isDragging, setIsDragging] = useState(false);
 
   const content = side === "left" ? leftContent : rightContent;
@@ -21,6 +61,7 @@ const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
     if (!file) return;
 
     setFileName(file.name);
+    setFileType(getFileType(file.name));
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -60,6 +101,7 @@ const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
     if (!file) return;
 
     setFileName(file.name);
+    setFileType(getFileType(file.name));
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -71,6 +113,16 @@ const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
       }
     };
     reader.readAsText(file);
+  };
+
+  const clearContent = () => {
+    if (side === "left") {
+      setLeftContent("");
+    } else {
+      setRightContent("");
+    }
+    setFileName("");
+    setFileType("Plain Text");
   };
 
   return (
@@ -86,22 +138,47 @@ const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
             </p>
           </div>
           {fileName && (
-            <div className="text-sm text-gray-500 flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+            <div className="text-sm text-gray-500 flex items-center gap-3">
+              <div className="flex items-center">
+                <svg
+                  className="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  ></path>
+                </svg>
+                {fileName}
+                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  {fileType}
+                </span>
+              </div>
+              <button
+                onClick={clearContent}
+                className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-500"
+                title="Clear content"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                ></path>
-              </svg>
-              {fileName}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
             </div>
           )}
         </div>
@@ -146,11 +223,18 @@ const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
                     className="sr-only"
                     ref={fileInputRef}
                     onChange={handleFileChange}
+                    accept=".txt,.md,.json,.js,.jsx,.ts,.tsx,.html,.css,.py,.java,.c,.cpp,.cs,.go,.rb,.php,.rs,.xml,.yml,.yaml,.csv,.sh,.sql"
                   />
                 </label>
                 <p className="pl-1">or drag and drop</p>
               </div>
-              <p className="text-xs text-gray-500">Text files up to 10MB</p>
+              <p className="text-xs text-gray-500">
+                Text files up to 10MB
+                <span className="block mt-1">
+                  Supported formats: HTML, CSS, JS, TS, JSON, Python, Java,
+                  C/C++, and more
+                </span>
+              </p>
             </div>
           </div>
           <div className="mt-4">
@@ -171,6 +255,18 @@ const FileInput: React.FC<FileInputProps> = ({ side, label, description }) => {
                 onChange={handleTextChange}
               ></textarea>
             </div>
+            {content && !fileName && (
+              <div className="mt-2 flex justify-end">
+                <div className="inline-flex rounded-md">
+                  <button
+                    onClick={clearContent}
+                    className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
